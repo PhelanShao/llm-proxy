@@ -1,5 +1,5 @@
 """
-定义LLM配置的数据模型
+Define data models for LLM configuration
 """
 
 from pydantic import BaseModel, Field, validator
@@ -8,7 +8,7 @@ from enum import Enum
 
 
 class LLMProvider(str, Enum):
-    """支持的LLM提供商"""
+    """Supported LLM providers"""
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     GOOGLE = "google"
@@ -17,7 +17,7 @@ class LLMProvider(str, Enum):
 
 
 class LLMConfig(BaseModel):
-    """LLM配置模型"""
+    """LLM configuration model"""
     provider: LLMProvider
     base_url: str
     api_key: str
@@ -31,18 +31,18 @@ class LLMConfig(BaseModel):
     @validator('provider')
     def validate_provider(cls, v):
         if isinstance(v, str) and v not in [p.value for p in LLMProvider]:
-            raise ValueError(f"不支持的提供商: {v}")
+            raise ValueError(f"Unsupported provider: {v}")
         return v
 
 
 class Message(BaseModel):
-    """聊天消息模型"""
+    """Chat message model"""
     role: str
     content: Union[str, List[Dict[str, Any]]]
 
 
 class ChatRequest(BaseModel):
-    """聊天请求模型"""
+    """Chat request model"""
     messages: List[Message]
     model: Optional[str] = None
     temperature: Optional[float] = 0.7

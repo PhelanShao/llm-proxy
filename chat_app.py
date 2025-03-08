@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-LLM对话测试应用启动脚本
+LLM Chat Testing Application Launch Script
 """
 
 import os
 import sys
 
-# 确保能够导入项目模块
+# Ensure project modules can be imported
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from src.app import main

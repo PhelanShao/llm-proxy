@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-LLM配置密钥生成器启动脚本
+LLM Configuration Key Generator Launch Script
 """
 
 import os
 import sys
 
-# 确保能够导入项目模块
+# Ensure project modules can be imported
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from src.key_generator_app import main

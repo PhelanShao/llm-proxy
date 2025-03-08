@@ -1,5 +1,5 @@
 """
-基于Gradio的LLM测试对话平台
+Gradio-based LLM testing dialogue platform
 """
 
 import gradio as gr
@@ -13,7 +13,7 @@ from .models import LLMConfig
 
 
 class LLMChatApp:
-    """LLM聊天应用"""
+    """LLM chat application"""
     
     def __init__(self):
         self.llm_proxy = None
@@ -21,80 +21,80 @@ class LLMChatApp:
         self.config = None
     
     def validate_config(self, encrypted_key: str) -> str:
-        """验证加密的配置密钥"""
+        """Validate the encrypted configuration key"""
         try:
-            # 尝试解密配置
+            # Try to decrypt the configuration
             self.config = KeyGenerator.decrypt_config(encrypted_key)
             
-            # 创建LLM代理
+            # Create LLM proxy
             self.llm_proxy = LLMProxy(encrypted_key)
             
-            return f"✅ 配置成功！提供商: {self.config.provider}, 模型: {self.config.model}"
+            return f"✅ Configuration successful! Provider: {self.config.provider}, Model: {self.config.model}"
         except Exception as e:
             traceback.print_exc()
-            return f"❌ 配置失败: {str(e)}"
+            return f"❌ Configuration failed: {str(e)}"
     
     def chat(self, message: str) -> Tuple[str, List[Tuple[str, str]], str]:
-        """处理用户消息并更新聊天历史"""
+        """Process user message and update chat history"""
         if not self.llm_proxy:
-            return "", self.chat_history, "请先配置LLM API"
+            return "", self.chat_history, "Please configure LLM API first"
         
         try:
-            # 发送消息并获取响应
+            # Send message and get response
             response = self.llm_proxy.send_message(message)
             
-            # 更新聊天历史
+            # Update chat history
             self.chat_history.append((message, response))
             
             return "", self.chat_history, ""
         except Exception as e:
             traceback.print_exc()
-            error_message = f"出错: {str(e)}"
+            error_message = f"Error: {str(e)}"
             return "", self.chat_history, error_message
     
     def clear_history(self) -> List[Tuple[str, str]]:
-        """清除聊天历史"""
+        """Clear chat history"""
         self.chat_history = []
         return self.chat_history
 
 
 def create_demo():
-    """创建Gradio演示界面"""
+    """Create Gradio demo interface"""
     app = LLMChatApp()
     
-    with gr.Blocks(title="LLM代理平台") as demo:
-        gr.Markdown("# LLM代理平台 - 测试对话界面")
+    with gr.Blocks(title="LLM Proxy Platform") as demo:
+        gr.Markdown("# LLM Proxy Platform - Testing Dialogue Interface")
         
         with gr.Row():
             with gr.Column(scale=4):
                 encrypted_key = gr.Textbox(
-                    label="加密配置密钥", 
-                    placeholder="粘贴加密的配置密钥...",
+                    label="Encrypted Configuration Key", 
+                    placeholder="Paste encrypted configuration key...",
                     type="password"
                 )
             
             with gr.Column(scale=1):
-                validate_btn = gr.Button("验证并配置")
+                validate_btn = gr.Button("Validate and Configure")
                 
-        config_status = gr.Markdown("*请输入加密配置密钥并点击验证按钮*")
+        config_status = gr.Markdown("*Please enter encrypted configuration key and click validate button*")
         
-        chatbot = gr.Chatbot(label="对话")
+        chatbot = gr.Chatbot(label="Conversation")
         
         with gr.Row():
             with gr.Column(scale=4):
                 msg = gr.Textbox(
-                    label="消息", 
-                    placeholder="输入消息...",
+                    label="Message", 
+                    placeholder="Enter message...",
                     show_label=False
                 )
             
             with gr.Column(scale=1):
-                submit_btn = gr.Button("发送")
-                clear_btn = gr.Button("清除历史")
+                submit_btn = gr.Button("Send")
+                clear_btn = gr.Button("Clear History")
         
-        error_box = gr.Textbox(label="错误信息", visible=True)
+        error_box = gr.Textbox(label="Error Messages", visible=True)
         
-        # 绑定事件
+        # Bind events
         validate_btn.click(
             fn=app.validate_config,
             inputs=[encrypted_key],
@@ -123,7 +123,7 @@ def create_demo():
 
 
 def main():
-    """主函数"""
+    """Main function"""
     demo = create_demo()
     demo.launch(share=False)
 

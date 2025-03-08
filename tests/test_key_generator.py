@@ -1,12 +1,12 @@
 """
-测试密钥生成器功能
+Test key generator functionality
 """
 
 import unittest
 import os
 import sys
 
-# 添加项目根目录到Python路径
+# Add project root directory to Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.key_generator import KeyGenerator, generate_encrypted_key
@@ -14,10 +14,10 @@ from src.models import LLMConfig, LLMProvider
 
 
 class TestKeyGenerator(unittest.TestCase):
-    """测试密钥生成器功能"""
+    """Test key generator functionality"""
     
     def setUp(self):
-        """设置测试环境"""
+        """Set up test environment"""
         self.test_config = LLMConfig(
             provider=LLMProvider.OPENAI,
             base_url="https://api.openai.com/v1",
@@ -28,16 +28,16 @@ class TestKeyGenerator(unittest.TestCase):
         )
     
     def test_encrypt_decrypt(self):
-        """测试加密和解密过程"""
-        # 加密配置
+        """Test encryption and decryption process"""
+        # Encrypt configuration
         encrypted_key = KeyGenerator.encrypt_config(self.test_config)
         self.assertIsInstance(encrypted_key, str)
         
-        # 解密配置
+        # Decrypt configuration
         decrypted_config = KeyGenerator.decrypt_config(encrypted_key)
         self.assertIsInstance(decrypted_config, LLMConfig)
         
-        # 验证解密后的配置是否与原始配置一致
+        # Verify decrypted configuration matches original configuration
         self.assertEqual(decrypted_config.provider, self.test_config.provider)
         self.assertEqual(decrypted_config.base_url, self.test_config.base_url)
         self.assertEqual(decrypted_config.api_key, self.test_config.api_key)
@@ -46,8 +46,8 @@ class TestKeyGenerator(unittest.TestCase):
         self.assertEqual(decrypted_config.extra_body, self.test_config.extra_body)
     
     def test_generate_encrypted_key(self):
-        """测试生成加密密钥函数"""
-        # 使用辅助函数生成加密密钥
+        """Test generate_encrypted_key helper function"""
+        # Use helper function to generate encrypted key
         encrypted_key = generate_encrypted_key(
             provider="openai",
             base_url="https://api.openai.com/v1",
@@ -59,7 +59,7 @@ class TestKeyGenerator(unittest.TestCase):
         
         self.assertIsInstance(encrypted_key, str)
         
-        # 验证解密后的内容
+        # Verify decrypted content
         decrypted_config = KeyGenerator.decrypt_config(encrypted_key)
         self.assertEqual(decrypted_config.provider, "openai")
         self.assertEqual(decrypted_config.base_url, "https://api.openai.com/v1")

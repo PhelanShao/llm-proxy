@@ -1,5 +1,5 @@
 """
-LLM代理 - 负责处理与各种LLM供应商的通信
+LLM Proxy - Responsible for handling communication with various LLM providers
 """
 
 import os
@@ -15,52 +15,52 @@ load_dotenv()
 
 
 class LLMProxy:
-    """LLM代理类，处理与LLM服务提供商的通信"""
+    """LLM proxy class, handles communication with LLM service providers"""
     
     def __init__(self, encrypted_key: str):
         """
-        初始化LLM代理
+        Initialize LLM proxy
         
         Args:
-            encrypted_key: 加密的LLM配置密钥
+            encrypted_key: Encrypted LLM configuration key
         """
         self.config = KeyGenerator.decrypt_config(encrypted_key)
         self._setup_client()
     
     def _setup_client(self):
-        """根据配置设置适当的客户端"""
+        """Set up appropriate client based on configuration"""
         if self.config.provider == LLMProvider.OPENAI.value:
             self.client = OpenAI(
                 base_url=self.config.base_url,
                 api_key=self.config.api_key,
             )
         elif self.config.provider == LLMProvider.ANTHROPIC.value:
-            # 这里需要导入Anthropic客户端
-            # 为简化示例，我们暂时只实现OpenAI接口
-            raise NotImplementedError("Anthropic客户端尚未实现")
+            # Need to import Anthropic client here
+            # For simplicity, we only implement OpenAI interface for now
+            raise NotImplementedError("Anthropic client not yet implemented")
         elif self.config.provider == LLMProvider.GOOGLE.value:
-            # 这里需要导入Google客户端
-            # 为简化示例，我们暂时只实现OpenAI接口
-            raise NotImplementedError("Google客户端尚未实现")
+            # Need to import Google client here
+            # For simplicity, we only implement OpenAI interface for now
+            raise NotImplementedError("Google client not yet implemented")
         elif self.config.provider == LLMProvider.OPENROUTER.value:
-            # OpenRouter实际上使用OpenAI兼容接口
+            # OpenRouter actually uses OpenAI-compatible interface
             self.client = OpenAI(
                 base_url=self.config.base_url,
                 api_key=self.config.api_key,
             )
         else:
-            raise ValueError(f"不支持的提供商: {self.config.provider}")
+            raise ValueError(f"Unsupported provider: {self.config.provider}")
     
     def send_message(self, message: str, model: Optional[str] = None) -> str:
         """
-        发送单条消息到LLM并获取响应
+        Send a single message to the LLM and get a response
         
         Args:
-            message: 用户消息
-            model: 可选的模型名称，如果不提供则使用配置中的默认模型
+            message: User message
+            model: Optional model name, if not provided uses default model from configuration
             
         Returns:
-            LLM的响应文本
+            LLM response text
         """
         return self.chat([{"role": "user", "content": message}], model)
     
@@ -70,47 +70,47 @@ class LLMProxy:
              temperature: float = 0.7,
              max_tokens: Optional[int] = None) -> str:
         """
-        发送聊天消息到LLM并获取响应
+        Send chat messages to LLM and get a response
         
         Args:
-            messages: 消息列表
-            model: 可选的模型名称
-            temperature: 温度参数
-            max_tokens: 最大生成token数
+            messages: List of messages
+            model: Optional model name
+            temperature: Temperature parameter
+            max_tokens: Maximum tokens to generate
             
         Returns:
-            LLM的响应文本
+            LLM response text
         """
         model = model or self.config.model
         
         if self.config.provider in [LLMProvider.OPENAI.value, LLMProvider.OPENROUTER.value]:
-            # 构建请求参数
+            # Build request parameters
             kwargs = {
                 "model": model,
                 "messages": messages,
                 "temperature": temperature
             }
             
-            # 添加max_tokens如果有提供
+            # Add max_tokens if provided
             if max_tokens is not None:
                 kwargs["max_tokens"] = max_tokens
                 
-            # 添加额外的请求体参数
+            # Add extra request body parameters
             if self.config.extra_body:
                 kwargs.update(self.config.extra_body)
                 
-            # 添加额外的头信息
+            # Add extra headers
             extra_headers = {}
             if self.config.headers:
                 extra_headers = self.config.headers
                 
-            # 发送请求
+            # Send request
             completion = self.client.chat.completions.create(
                 **kwargs,
                 extra_headers=extra_headers
             )
             
-            # 返回响应文本
+            # Return response text
             return completion.choices[0].message.content
         else:
-            raise NotImplementedError(f"尚未实现{self.config.provider}的聊天功能") 
+            raise NotImplementedError(f"Chat functionality not yet implemented for {self.config.provider}") 

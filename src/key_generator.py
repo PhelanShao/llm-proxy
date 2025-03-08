@@ -1,5 +1,5 @@
 """
-密钥生成器 - 负责加密和解密LLM配置信息
+Key Generator - Responsible for encrypting and decrypting LLM configuration information
 """
 
 import base64
@@ -15,14 +15,14 @@ from .models import LLMConfig, LLMProvider
 
 
 class KeyGenerator:
-    """LLM配置密钥生成器"""
+    """LLM configuration key generator"""
     
-    # 用于派生加密密钥的主密钥，实际部署时应该存储在安全的环境变量中
+    # Master key used to derive encryption key, should be stored in a secure environment variable in production
     MASTER_KEY = os.environ.get("LLM_PROXY_MASTER_KEY", "this_is_a_default_master_key_please_change_in_production")
     
     @classmethod
     def _derive_key(cls, salt: bytes) -> bytes:
-        """从主密钥派生加密密钥"""
+        """Derive encryption key from master key"""
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
@@ -33,40 +33,40 @@ class KeyGenerator:
     
     @classmethod
     def encrypt_config(cls, config: Union[LLMConfig, Dict[str, Any]]) -> str:
-        """加密LLM配置信息"""
+        """Encrypt LLM configuration information"""
         if isinstance(config, LLMConfig):
             config_dict = config.dict()
         else:
             config_dict = config
             
-        # 生成随机盐值
+        # Generate random salt
         salt = secrets.token_bytes(16)
         
-        # 派生加密密钥
+        # Derive encryption key
         key = cls._derive_key(salt)
         
-        # 加密配置
+        # Encrypt configuration
         f = Fernet(key)
         config_bytes = json.dumps(config_dict).encode()
         encrypted_config = f.encrypt(config_bytes)
         
-        # 将盐值和加密后的配置组合在一起
+        # Combine salt and encrypted configuration
         result = base64.urlsafe_b64encode(salt + encrypted_config).decode()
         return result
     
     @classmethod
     def decrypt_config(cls, encrypted_key: str) -> LLMConfig:
-        """解密LLM配置信息"""
-        # 解码加密的密钥
+        """Decrypt LLM configuration information"""
+        # Decode encrypted key
         raw_data = base64.urlsafe_b64decode(encrypted_key.encode())
         
-        # 提取盐值和加密的配置
+        # Extract salt and encrypted configuration
         salt, encrypted_config = raw_data[:16], raw_data[16:]
         
-        # 派生加密密钥
+        # Derive encryption key
         key = cls._derive_key(salt)
         
-        # 解密配置
+        # Decrypt configuration
         f = Fernet(key)
         decrypted_config = f.decrypt(encrypted_config)
         config_dict = json.loads(decrypted_config)
@@ -83,18 +83,18 @@ def generate_encrypted_key(
     extra_body: Optional[Dict[str, Any]] = None
 ) -> str:
     """
-    生成加密的LLM配置密钥
+    Generate encrypted LLM configuration key
     
     Args:
-        provider: LLM提供商 (openai, anthropic, google 等)
-        base_url: API基础URL
-        api_key: API密钥
-        model: 模型名称
-        headers: 可选的HTTP头信息
-        extra_body: 可选的额外请求体参数
+        provider: LLM provider (openai, anthropic, google, etc.)
+        base_url: API base URL
+        api_key: API key
+        model: Model name
+        headers: Optional HTTP headers
+        extra_body: Optional extra request body parameters
         
     Returns:
-        加密的配置密钥
+        Encrypted configuration key
     """
     config = LLMConfig(
         provider=provider,
